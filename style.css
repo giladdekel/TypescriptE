@@ -94,6 +94,10 @@
   border: 2px solid #4aa53d;
 }
 
+.todo-row h1 {
+  color: white !important;
+  text-align: center;
+}
 /* (G) DOES NOT MATTER */
 html,
 body,

@@ -1,0 +1,9 @@
+{
+  "compilerOptions": {
+    "target": "ESNEXT",
+    "watch": true,
+    "lib": ["DOM", "ES2020"]
+  }
+}
+
+// tsc script.ts --watch --target es6

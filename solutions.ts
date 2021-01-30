@@ -1,100 +1,182 @@
-window.onload = () => {
-  console.log("STARTING PROJECT");
+//// selectors
+const todoItem: Element = document.querySelector("#todo-item");
 
-  //// selectors
-  const todoItem = document.querySelector("#todo-item");
+const todoSave: Element = document.querySelector("#todo-save");
 
-  const todoSave = document.querySelector("#todo-save");
+const todoList: Element = document.querySelector("#todo-list");
 
-  const todoList = document.querySelector("#todo-list");
+const clearBtn: Element = document.querySelector("#todo-delall");
 
-  const clearBtn = document.querySelector("#todo-delall");
+const clearOne: Element = document.querySelector("#todo-delcom");
 
-  const clearOne = document.querySelector("#todo-delcom");
+let id: number = 0;
+var arrOfNotes: string[] = [];
+var onComplete: boolean = true;
+var isNewItem: boolean = false;
+//////////////////////////////////////////////////////////
 
-  let id: number = 0;
-  var arrOfNotes: number[] = [];
+displayNotesFromLocalStorage();
 
-  //////////////////////////////////////////////////////////
+function displayNotesFromLocalStorage(): void {
+  arrOfNotes = JSON.parse(localStorage.getItem("arrInStorage") || "[]");
 
-  displayNotesFromLocalStorage();
+  if (arrOfNotes.length > 0) {
+    console.log("arrOfNotes :", arrOfNotes);
 
-  function displayNotesFromLocalStorage(): void {
-    arrOfNotes = JSON.parse(localStorage.getItem("arrInStorage") || "[]");
-
-    arrOfNotes.forEach((note) => {
-      todoList.innerHTML += `
-        <div class="todo-row" id='${note.id}'>
-          <div class="todo-item" onclick="deleteNote(${note.id++})">${
-        note.todoItemValue
-      }</div>
-          <span class="todo-ok"></span>
-        </div>
-`;
-
-      ////////////////////////
-
-      ////////////////////////////
-
+    arrOfNotes.forEach((note: string) => {
+      todoList.innerHTML += creatNewTodoRow(note.todoItemValue, note.id);
       todoItem.value = "";
     });
+
+    // console.log(arrOfNotes[arrOfNotes.length - 1]);
+    id = arrOfNotes[arrOfNotes.length - 1].id;
   }
+}
 
-  ////////////////////////////////////////////////////
-  todoSave.addEventListener("click", function (event) {
-    event.preventDefault();
-    console.log("clicked");
+//////////////////////////on click on + button ////////////////////////
+todoSave.addEventListener("click", function (event) {
+  event.preventDefault();
+  let todoItemValue = todoItem.value;
 
-    creatNewNote();
-    function creatNewNote() {
-      let todoItemValue: string = todoItem.value;
+  if (todoItemValue.length > 0) {
+    id++;
 
-      arrOfNotes.push({ todoItemValue: string, id: number });
-      console.log("arrOfNotes :", arrOfNotes);
+    arrOfNotes.push({ todoItemValue, id });
+    console.log("arrOfNotes :", arrOfNotes);
 
-      todoList.innerHTML += `
-        <div class="todo-row" id='${id}'>
-          <div class="todo-item" onclick="deleteNote(${id++})">${todoItemValue}</div>
-          <span class="todo-ok"></span>
-        </div>
-`;
+    todoList.innerHTML += creatNewTodoRow(todoItemValue, id);
 
-      ////////////////////////
-
-      ////////////////////////////
-
-      todoItem.value = "";
-    }
+    todoItem.value = "";
 
     putNewNoteInLocalStorage();
-  });
+  }
+});
 
-  function putNewNoteInLocalStorage(): void {
-    localStorage.setItem("arrInStorage", JSON.stringify(arrOfNotes));
+function creatNewTodoRow(content: any, id: any) {
+  return `
+        <div class="todo-row" >
+          <div class="todo-item" id='${id}'> ${content}  </div>
+          <span class="todo-ok"  onclick="Completed(${id})">
+        <h1>&#10003</h1></span>
+        </div>`;
+}
+
+function putNewNoteInLocalStorage(): void {
+  //   localStorage.clear();
+  localStorage.setItem("arrInStorage", JSON.stringify(arrOfNotes));
+}
+
+//display The Note As Completed
+
+// [t0,t1,t2,t3]
+//   0  1  2  3
+var idOfRowsToDelete = [];
+var prevId = "";
+var deletedItems; //{todoItemValue: "dsfs", id: 2}
+
+function Completed(currentId) {
+  console.log("currentId :", currentId);
+
+  console.log("currentId :", currentId);
+  console.log("prevId :", prevId);
+  if (prevId !== currentId) {
+    onComplete = true;
   }
 
-  /////// delete Note
+  const idOfClickRow = document.getElementById(currentId);
+  console.log("idOfClickRow :", idOfClickRow);
 
-  //   function deleteNote(id) {
-  //     document.getElementById(id).remove();
-  //     arrOfNotes = arrOfNotes.filter((note) => note.id !== id);
-  //     putNewNoteInLocalStorage();
-  //     console.log(localStorage.getItem("arrInStorage"));
-  //   }
+  if (onComplete) {
+    idOfClickRow.classList.add("done");
 
-  clearBtn.addEventListener("click", function (event) {
-    event.preventDefault();
-    console.log("clear");
+    idOfRowsToDelete.push(document.getElementById(currentId));
+    console.log("idOfRowsToDelete :", idOfRowsToDelete);
+    deletedItems = arrOfNotes.filter((note) => note.id === currentId);
+    console.log("deletedItems :", deletedItems);
 
-    localStorage.clear();
-    todoList.innerHTML = ``;
+    console.log("arrOfNotes :", arrOfNotes);
+
+    arrOfNotes = arrOfNotes.filter((note) => note.id !== currentId);
+    console.log("arrOfNotes :", arrOfNotes);
+    //   //   arrOfNotes.splice(id, 1);
+    //   //   console.log("arrOfNotes :", arrOfNotes);
+
+    onComplete = false;
+  } else if (!onComplete) {
+    idOfClickRow.classList.remove("done");
+
+    var itemToBringBack = deletedItems.pop();
+    console.log("itemToBringBack :", itemToBringBack);
+
+    console.log("idOfRowsToDelete :", idOfRowsToDelete);
+
+    idOfRowsToDelete = idOfRowsToDelete.filter((note) => {
+      console.log("note :", note);
+      console.log("itemToBringBack :", itemToBringBack);
+
+      return note !== document.getElementById(currentId);
+    });
+    //   console.log("idOfRowsToDelete2s :", idOfRowsToDelete);
+
+    var i = 0; //.
+
+    //   // console.log("arrOfNotes[i].id  :", arrOfNotes[i].id);
+
+    //   //                 4              0
+
+    // 0: {todoItemValue: "aa", id: 1. 0}
+    // 1: {todoItemValue: "bbb", id: 2.1}
+    // 2: {todoItemValue: "ccc", id: 3}
+    // 3: {todoItemValue: "ddddd", id: 4,2}
+    //                                                    4: {todoItemValue: "eeee", id: 5,3}
+
+    var originalLength = arrOfNotes.length;
+    for (var i = 0; i < originalLength; i++) {
+      console.log("i :", i);
+
+      // console.log("------------------------");
+      // console.log("arrOfNotes[i].id :", arrOfNotes[i].id);
+      // console.log("itemToBringBack.id :", itemToBringBack.id);
+      if (arrOfNotes[i].id > itemToBringBack.id) {
+        arrOfNotes.splice(i, 0, itemToBringBack);
+        break;
+      }
+    }
+    if (i === arrOfNotes.length - 1) {
+      arrOfNotes.splice(i, 0, itemToBringBack);
+    }
+    //   console.log("i :", i);
+
+    console.log("arrOfNotes :", arrOfNotes);
+
+    onComplete = true;
+  }
+  prevId = currentId;
+}
+
+/////// delete Note
+
+clearBtn.addEventListener("click", function (event) {
+  event.preventDefault();
+  console.log("clear");
+  localStorage.clear();
+  location.reload();
+});
+
+clearOne.addEventListener("click", function (event) {
+  event.preventDefault();
+  localStorage.clear();
+  localStorage.setItem("arrInStorage", JSON.stringify(arrOfNotes));
+
+  idOfRowsToDelete.forEach((element) => {
+    element.classList.remove("done");
+    element.classList.add("cx");
+    element.parentElement.lastElementChild.classList.remove("todo-ok");
+    element.parentElement.lastElementChild.classList.add("todo-cx");
   });
+  setTimeout(() => {
+    location.reload();
+  }, 500);
+});
 
-  clearOne.addEventListener("click", function (event) {
-    event.preventDefault();
-    console.log("clear");
-
-    localStorage.clear();
-    todoList.innerHTML = ``;
-  });
-};
+///////////////////////////////////////////////////
